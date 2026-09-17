@@ -1,0 +1,14 @@
+# 数据库文件，不要提交
+ipam.db
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# 编辑器
+.vscode/
+.idea/
