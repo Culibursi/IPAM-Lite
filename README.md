@@ -19,6 +19,12 @@ View, add, edit, filter, and export IPs in your browser. Data travels with the f
 - [Quick Start (Windows)](#quick-start-windows)
 - [Quick Start (Linux / macOS)](#quick-start-linux--macos)
 - [Usage](#usage)
+  - [Add IP](#add-ip)
+  - [Domain Management](#domain-management)
+  - [Import Data](#import-data)
+  - [Edit / Delete](#edit--delete)
+  - [Filter and Search](#filter-and-search)
+  - [Export CSV](#export-csv)
 - [Backup and Migration](#backup-and-migration)
 - [Multi-User Access](#multi-user-access)
 - [FAQ](#faq)
@@ -30,10 +36,12 @@ View, add, edit, filter, and export IPs in your browser. Data travels with the f
 ### Features
 
 - Browser-based, no client installation required
-- Records IP, status, hostname, MAC, owner, subnet, VLAN, note, updated time
+- Records IP, status, domain, hostname, user, owner, MAC, subnet, VLAN, note, updated time
+- Domain management to separate different organizations (e.g., A Bureau, B Office, C Department)
 - Status categories: free, used, reserved, conflict, deprecated
-- Filter by status, one-click view of all free IPs
-- Keyword search: IP, hostname, owner, note
+- Filter by status and domain, one-click view of all free IPs
+- Keyword search: IP, hostname, user, owner, note
+- Import from CSV (Excel) — existing IPs are updated, new ones are added
 - One-click CSV export, opens directly in Excel
 - Data stored in a single `ipam.db` file; backup is just copying the file
 - Only one `ipam.py` file; copy two files to another machine and it keeps working
@@ -54,6 +62,8 @@ D:\ipam\
 - `ipam.py`: Python program with web UI and database logic.
 - `ipam.db`: SQLite database, all IP records are stored here.
 - `README.md`: Usage documentation.
+- `LICENSE`: MIT License.
+
 
 ---
 
@@ -183,8 +193,29 @@ pkill -f ipam.py
 1. Click **+ 新增** at the top
 2. Fill in the IP address (required)
 3. Select status: free / used / reserved / conflict / deprecated
-4. Optionally fill in hostname, MAC, owner, subnet, VLAN, note
-5. Click **保存**
+4. Select a domain (optional; leave as "Unclassified" if not needed)
+5. Optionally fill in hostname, MAC, user, owner, subnet, VLAN, note
+6. Click **保存**
+
+#### Domain Management
+
+1. Click **管理域** at the top of the IP list
+2. Enter a name (e.g., "xx Bureau", "xx Office", "xxx Department") and a note
+3. Click **添加域**
+4. You can edit or delete a domain later
+   - Deleting a domain does **not** delete its IPs. They simply become "Unclassified".
+
+#### Import Data
+
+1. Click **导入数据** at the top
+2. Prepare your data:
+   - Save your Excel file as **CSV (comma-separated)**
+   - Header row should include: `IP, 状态, 域, 主机名, 使用者, 负责人, MAC, 网段, VLAN, 备注`
+   - Status can be Chinese (空闲/已用/保留/冲突/停用) or English (free/used/reserved/conflict/deprecated)
+   - If a domain in the CSV does not exist yet, it will be created automatically
+3. Download the CSV template if you're not sure about the format
+4. Select the CSV file and click **开始导入**
+5. Existing IPs will be updated; new IPs will be added
 
 #### Edit / Delete
 
@@ -194,13 +225,15 @@ pkill -f ipam.py
 #### Filter and Search
 
 - Top buttons: All, Free, Used, Reserved
-- Search box on the right: fuzzy search by IP, hostname, owner, note
+- Domain row above: filter by domain
+- Search box on the right: fuzzy search by IP, hostname, user, owner, note
 - Free IPs are highlighted in green for quick identification
 
 #### Export CSV
 
 Click **导出 CSV** at the top; the browser downloads a CSV file.  
-Open it directly in Excel; Chinese characters won't be garbled (BOM included).
+Open it directly in Excel; Chinese characters won't be garbled (BOM included).  
+The export includes domain and user columns.
 
 #### About "Free IP"
 
@@ -232,13 +265,12 @@ ipam_2026-09-16.db
 
 #### Migrate from Excel
 
-First organize your Excel into CSV, with suggested columns:
+Use the built-in **导入数据** feature:  
+1. Open your Excel file and save it as **CSV (comma-separated)**
+2. Make sure the header matches the recommended format
+3. Upload it via the **导入数据** page
 
-```text
-IP,status,hostname,MAC,owner,subnet,VLAN,note
-```
-
-Then write a one-time import script, or enter records manually.
+If you have a lot of records, this is much faster than entering them one by one.
 
 ---
 
@@ -331,6 +363,12 @@ Edit the last line of `ipam.py`, change `port=5000` to another port.
 On Windows, use `nssm` to register `python ipam.py` as a service.  
 On Linux, use `systemd`.
 
+#### 11. Database is locked
+
+This usually happens when multiple people write at the same time, or an external tool has the `ipam.db` file open.  
+The program now includes `timeout=15` and WAL mode to reduce this.  
+If it still happens, close any external tools that may have the database open, and restart the program.
+
 ---
 
 ### Notes
@@ -352,8 +390,6 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## 中文
 
-# IPAM Lite - 简单的IP管理工具
-
 一个给小型运维团队用的轻量IP台账工具。
 UI简洁，功能专一。
 不用装数据库服务，不用配 Web 服务器，一个 Python 文件 + 一个 SQLite 文件就能直接运行。
@@ -367,6 +403,12 @@ UI简洁，功能专一。
 - [快速开始（Windows）](#快速开始windows)
 - [快速开始（Linux / macOS）](#快速开始linux--macos)
 - [使用说明](#使用说明)
+  - [新增 IP](#新增-ip)
+  - [域管理](#域管理)
+  - [导入数据](#导入数据)
+  - [编辑 / 删除](#编辑--删除)
+  - [筛选与搜索](#筛选与搜索)
+  - [导出 CSV](#导出-csv)
 - [数据备份与迁移](#数据备份与迁移)
 - [多人如何共用](#多人如何共用)
 - [常见问题](#常见问题)
@@ -378,10 +420,12 @@ UI简洁，功能专一。
 ### 功能特性
 
 - 浏览器操作，不需要装客户端
-- 记录 IP、状态、主机名、MAC、负责人、网段、VLAN、备注、更新时间
+- 记录 IP、状态、域、主机名、使用者、负责人、MAC、网段、VLAN、备注、更新时间
+- 支持分域管理，可将不同机构与部门的 IP 分开
 - 状态分类：空闲、已用、保留、冲突、停用
-- 按状态筛选，一键查看所有空闲 IP
-- 关键字搜索：IP、主机名、负责人、备注
+- 按状态和域筛选，一键查看所有空闲 IP
+- 关键字搜索：IP、主机名、使用者、负责人、备注
+- 支持从 CSV（Excel）导入数据，已有 IP 自动更新，新 IP 自动新增
 - 一键导出 CSV，Excel 可直接打开
 - 数据存在单个 `ipam.db` 文件里，备份可直接复制文件
 - 程序只有一个 `ipam.py`，换电脑拷两个文件就能继续用
@@ -402,6 +446,7 @@ D:\ipam\
 - `ipam.py`：Python 程序，包含网页界面和数据库逻辑。
 - `ipam.db`：SQLite 数据库，所有的 IP 记录都在这里。
 - `README.md`：使用说明，就是当前这个文件。
+- `LICENSE`：MIT 许可证。
 
 ---
 
@@ -531,8 +576,29 @@ pkill -f ipam.py
 1. 点击顶部 **+ 新增**
 2. 填写 IP 地址（必填）
 3. 选择状态：空闲 / 已用 / 保留 / 冲突 / 停用
-4. 按需填写主机名、MAC、负责人、网段、VLAN、备注
-5. 点击 **保存**
+4. 选择所属域（可选，不选则归为“未分类”）
+5. 按需填写主机名、MAC、使用者、负责人、网段、VLAN、备注
+6. 点击 **保存**
+
+#### 域管理
+
+1. 在 IP 列表顶部点击 **管理域**
+2. 输入名称（如：xx局、xx所、xxx部门）和备注
+3. 点击 **添加域**
+4. 之后可以编辑或删除域
+   - 删除域 **不会** 删除该域下的 IP，它们会自动变为“未分类”
+
+#### 导入数据
+
+1. 点击顶部 **导入数据**
+2. 准备数据：
+   - 将 Excel 文件另存为 **CSV（逗号分隔）** 格式
+   - 表头建议包含：`IP, 状态, 域, 主机名, 使用者, 负责人, MAC, 网段, VLAN, 备注`
+   - 状态列填中文（空闲/已用/保留/冲突/停用）或英文（free/used/reserved/conflict/deprecated）均可
+   - 如果 CSV 中的域不存在，导入时会自动创建
+3. 如果不确定格式，可以点击“下载 CSV 模板”
+4. 选择 CSV 文件，点击 **开始导入**
+5. 已存在的 IP 会被更新，不存在的 IP 会被新增
 
 #### 编辑 / 删除
 
@@ -542,13 +608,15 @@ pkill -f ipam.py
 #### 筛选与搜索
 
 - 顶部按钮：全部、空闲、已用、保留
-- 右侧搜索框：支持 IP、主机名、负责人、备注模糊搜索
+- 上方“域”行：按域筛选
+- 右侧搜索框：支持 IP、主机名、使用者、负责人、备注模糊搜索
 - 空闲 IP 会以绿色背景显示，方便快速识别
 
 #### 导出 CSV
 
 点击顶部 **导出 CSV**，浏览器会下载一个 CSV 文件。  
-用 Excel 直接打开即可，中文不会乱码（已加 BOM）。
+用 Excel 直接打开即可，中文不会乱码（已加 BOM）。  
+导出内容包含“域”和“使用者”列。
 
 #### 关于“空闲 IP”
 
@@ -580,13 +648,12 @@ ipam_2026-09-16.db
 
 #### 从 Excel 迁移
 
-先把 Excel 整理成 CSV，列名建议：
+推荐使用内置的 **导入数据** 功能：  
+1. 打开 Excel，另存为 **CSV（逗号分隔）**
+2. 确保表头符合推荐格式
+3. 在 **导入数据** 页面上传该 CSV
 
-```text
-IP,状态,主机名,MAC,负责人,网段,VLAN,备注
-```
-
-然后写一个一次性导入脚本，或者手动逐条录入。
+如果记录很多，这比手动一条条录入快很多。
 
 ---
 
@@ -610,8 +677,8 @@ IP,状态,主机名,MAC,负责人,网段,VLAN,备注
 
 如果打不开，检查那台机器的 **Windows 防火墙**，放行 5000 端口。
 
-> 不要两个人各自跑各自的 `ipam.py`，然后各改各的，数据会不同步。  
-> 跑一个服务器，大家访问同一个地址。
+> 不要几个人各自跑各自的 `ipam.py`，然后各改各的，数据会不同步。  
+> 跑一个服务器，大家访问同一个地址，可以统合IP地址。
 
 ---
 
@@ -679,16 +746,23 @@ app.run(host="0.0.0.0", port=5000, debug=False)
 Windows 可以用 `nssm` 把 `python ipam.py` 注册成服务。  
 Linux 可以用 `systemd`。
 
+#### 11. 数据库被锁定（database is locked）
+
+通常是因为多个人同时写入，或者有外部工具（如 DB Browser、VSCode）打开了 `ipam.db` 文件。  
+当前代码已加入 `timeout=15` 和 WAL 模式来减少这个问题。  
+如果仍然出现，请关掉可能占用数据库的外部工具，然后重启程序。
+
 ---
 
 ### 注意事项
 
-- 本工具是简易台账，不是自动扫描发现工具，仅适用于个人 IP 运维或小型团队。
+- 本工具是简易台账式IP管理工具，不是自动扫描发现工具，无法自动扫描网段获取IP。仅适用于个人 IP 运维或小型团队。
 - 请定期备份 `ipam.db`。
 - 不要把服务直接暴露到公网。
 - 内网使用建议配合防火墙和访问控制。
 - 修改 `ipam.py` 代码前，先备份 `ipam.db`。
-- 如果两个人同时编辑同一条记录，后保存的会覆盖先保存的，请注意协调。
+- 如果多人同时编辑同一条记录，后保存的会覆盖先保存的，请注意协调。
+- 请勿重复快速操作修改指令，可能会导致数据库锁死。
 
 ---
 
